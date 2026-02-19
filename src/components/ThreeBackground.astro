@@ -1,0 +1,87 @@
+<div id="canvas-container" class="absolute inset-0 z-0 opacity-40"></div>
+
+<script>
+    import * as THREE from "three";
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+    );
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+    const container = document.getElementById("canvas-container");
+    if (container) {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+    }
+
+    // Particles
+    const geometry = new THREE.BufferGeometry();
+    const particlesCount = 2000;
+    const posArray = new Float32Array(particlesCount * 3);
+
+    for (let i = 0; i < particlesCount * 3; i++) {
+        // Generate random positions spread out
+        posArray[i] = (Math.random() - 0.5) * 15;
+    }
+
+    geometry.setAttribute("position", new THREE.BufferAttribute(posArray, 3));
+
+    // Material - Yellow particles
+    const material = new THREE.PointsMaterial({
+        size: 0.02,
+        color: 0xffd700, // Gold/Yellow
+        transparent: true,
+        opacity: 0.8,
+    });
+
+    // Mesh
+    const particlesMesh = new THREE.Points(geometry, material);
+    scene.add(particlesMesh);
+
+    // Position camera
+    camera.position.z = 3;
+
+    // Interaction
+    let mouseX = 0;
+    let mouseY = 0;
+
+    document.addEventListener("mousemove", (event) => {
+        mouseX = event.clientX / window.innerWidth - 0.5;
+        mouseY = event.clientY / window.innerHeight - 0.5;
+    });
+
+    // Animation Loop
+    const animate = () => {
+        requestAnimationFrame(animate);
+
+        // Rotate the entire particle system slowly
+        particlesMesh.rotation.y += 0.001;
+        particlesMesh.rotation.x += 0.0005;
+
+        // Subtle reaction to mouse
+        particlesMesh.rotation.y += mouseX * 0.01;
+        particlesMesh.rotation.x += mouseY * 0.01;
+
+        renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // Resize handler
+    window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+
+<style>
+    #canvas-container {
+        pointer-events: none; /* Allow clicking through to content */
+    }
+</style>
